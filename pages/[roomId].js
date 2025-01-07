@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { cloneDeep } from "lodash";
+
 import { useSocket } from "@/context/socket";
 import usePeer from "@/hooks/usePeer";
 import useMediaStream from "@/hooks/useMediaStream";
@@ -9,15 +10,14 @@ import Player from "@/component/Player";
 import Bottom from "@/component/Bottom";
 import CopySection from "@/component/CopySection";
 
-import styles from '@/styles/room.module.css'
+import styles from "@/styles/room.module.css";
 import { useRouter } from "next/router";
 
 const Room = () => {
   const socket = useSocket();
   const { roomId } = useRouter().query;
   const { peer, myId } = usePeer();
-  const {stream} = useMediaStream()
-
+  const { stream } = useMediaStream();
   const {
     players,
     setPlayers,
@@ -27,13 +27,16 @@ const Room = () => {
     toggleVideo,
     leaveRoom
   } = usePlayer(myId, roomId, peer);
+
   const [users, setUsers] = useState([])
 
   useEffect(() => {
     if (!socket || !peer || !stream) return;
     const handleUserConnected = (newUser) => {
       console.log(`user connected in room with userId ${newUser}`);
+
       const call = peer.call(newUser, stream);
+
       call.on("stream", (incomingStream) => {
         console.log(`incoming stream from ${newUser}`);
         setPlayers((prev) => ({
@@ -44,6 +47,7 @@ const Room = () => {
             playing: true,
           },
         }));
+
         setUsers((prev) => ({
           ...prev,
           [newUser]: call
@@ -51,6 +55,7 @@ const Room = () => {
       });
     };
     socket.on("user-connected", handleUserConnected);
+
     return () => {
       socket.off("user-connected", handleUserConnected);
     };
@@ -66,6 +71,7 @@ const Room = () => {
         return { ...copy };
       });
     };
+
     const handleToggleVideo = (userId) => {
       console.log(`user with id ${userId} toggled video`);
       setPlayers((prev) => {
@@ -74,6 +80,7 @@ const Room = () => {
         return { ...copy };
       });
     };
+
     const handleUserLeave = (userId) => {
       console.log(`user ${userId} is leaving the room`);
       users[userId]?.close()
@@ -96,6 +103,7 @@ const Room = () => {
     peer.on("call", (call) => {
       const { peer: callerId } = call;
       call.answer(stream);
+
       call.on("stream", (incomingStream) => {
         console.log(`incoming stream from ${callerId}`);
         setPlayers((prev) => ({
@@ -106,6 +114,7 @@ const Room = () => {
             playing: true,
           },
         }));
+
         setUsers((prev) => ({
           ...prev,
           [callerId]: call
@@ -126,7 +135,6 @@ const Room = () => {
       },
     }));
   }, [myId, setPlayers, stream]);
-
 
   return (
     <>
