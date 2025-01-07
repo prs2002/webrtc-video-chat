@@ -9,7 +9,6 @@ const usePeer = () => {
     const [peer, setPeer] = useState(null)
     const [myId, setMyId] = useState('')
     const isPeerSet = useRef(false)
-
     useEffect(() => {
         if (isPeerSet.current || !roomId || !socket) return;
         isPeerSet.current = true;
@@ -31,5 +30,6 @@ const usePeer = () => {
         myId
     }
 }
+
 
 export default usePeer;
